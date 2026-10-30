@@ -7,38 +7,119 @@ const projectsData = [
     id: 1,
     title: "Personal Portfolio",
     description: "A modern, responsive portfolio website built to showcase my web development journey and projects.",
-    tags: ["React", "JavaScript", "CSS"]
+    technologies: ["React", "JavaScript", "CSS"],
+    githubUrl: "https://github.com/example/portfolio",
+    liveUrl: ""
   },
   {
     id: 2,
     title: "Productivity App",
     description: "A task and time management tool designed to help users stay organized and boost daily efficiency.",
-    tags: ["React", "JavaScript", "Local Storage"]
+    technologies: ["React", "JavaScript", "Local Storage"],
+    githubUrl: "https://github.com/example/productivity-app",
+    liveUrl: "https://example.com/productivity-demo"
   },
   {
     id: 3,
     title: "AI Study Assistant",
     description: "An intelligent web app that generates summaries and flashcards using integrated AI APIs.",
-    tags: ["React", "Node.js", "AI APIs"]
+    technologies: ["React", "Node.js", "AI APIs"],
+    githubUrl: "https://github.com/example/ai-study-assistant",
+    liveUrl: ""
   }
 ];
+
+// Reusable ProjectCard component
+function ProjectCard({ project }) {
+  return (
+    <div className="project-card">
+      <div className="project-content">
+        <h3 className="project-title">{project.title}</h3>
+        <p className="project-description">{project.description}</p>
+      </div>
+
+      <div className="project-tags">
+        {project.technologies.map((tech, index) => (
+          <span key={index} className="tag">{tech}</span>
+        ))}
+      </div>
+
+      {(project.githubUrl || project.liveUrl) && (
+        <div className="project-links">
+          {project.githubUrl && (
+            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="project-link">
+              GitHub Repo &rarr;
+            </a>
+          )}
+          {project.liveUrl && (
+            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="project-link">
+              Live Demo &rarr;
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Toggle mobile menu
+  // Contact form state
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Smooth scroll helper function
   const handleScroll = (e, targetId) => {
     e.preventDefault();
-    setIsMenuOpen(false); // Close mobile menu on click
+    setIsMenuOpen(false);
     const element = document.getElementById(targetId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  // Handle input changes for controlled inputs
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value
+    }));
+    // Clear validation error when user starts typing again
+    if (errorMsg) setErrorMsg('');
+  };
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault(); // Requirement 4: Prevent default page reload
+
+    // Requirement 5 & 6: Validate fields and email format
+    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
+      setErrorMsg('Please fill in all fields before submitting.');
+      setIsSubmitted(false);
+      return;
+    }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(formData.email)) {
+      setErrorMsg('Please enter a valid email address.');
+      setIsSubmitted(false);
+      return;
+    }
+
+    // Requirement 8 & 9: Success state and clear form fields
+    setErrorMsg('');
+    setIsSubmitted(true);
+    setFormData({ name: '', email: '', message: '' });
   };
 
   return (
@@ -141,17 +222,7 @@ function App() {
 
           <div className="projects-grid">
             {projectsData.map((project) => (
-              <div key={project.id} className="project-card">
-                <div className="project-content">
-                  <h3 className="project-title">{project.title}</h3>
-                  <p className="project-description">{project.description}</p>
-                </div>
-                <div className="project-tags">
-                  {project.tags.map((tag, index) => (
-                    <span key={index} className="tag">{tag}</span>
-                  ))}
-                </div>
-              </div>
+              <ProjectCard key={project.id} project={project} />
             ))}
           </div>
         </div>
@@ -159,15 +230,61 @@ function App() {
 
       {/* Contact Section */}
       <section id="contact" className="section contact-section">
-        <div className="section-container text-center">
-          <h2 className="section-title">Get In Touch</h2>
-          <p className="contact-description">
+        <div className="section-container">
+          <h2 className="section-title text-center">Get In Touch</h2>
+          <p className="contact-description text-center">
             I'm currently looking for new opportunities as a Junior Full-Stack Developer. 
-            Whether you have a question or just want to say hi, my inbox is always open!
+            Whether you have a question or just want to say hi, send me a message below!
           </p>
-          <a href="mailto:your.email@example.com" className="btn btn-primary">
-            Say Hello
-          </a>
+
+          <form onSubmit={handleSubmit} className="contact-form">
+            {errorMsg && <div className="form-alert error-alert">{errorMsg}</div>}
+            {isSubmitted && (
+              <div className="form-alert success-alert">
+                Thank you for your message! (Note: Demo form simulated successfully — no real email was sent.)
+              </div>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="name">Name</label>
+              <input 
+                type="text" 
+                id="name" 
+                name="name" 
+                value={formData.name} 
+                onChange={handleChange} 
+                placeholder="Your Name" 
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                value={formData.email} 
+                onChange={handleChange} 
+                placeholder="your.email@example.com" 
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="message">Message</label>
+              <textarea 
+                id="message" 
+                name="message" 
+                rows="5" 
+                value={formData.message} 
+                onChange={handleChange} 
+                placeholder="Write your message here..."
+              ></textarea>
+            </div>
+
+            <button type="submit" className="btn btn-primary submit-btn">
+              Send Message
+            </button>
+          </form>
         </div>
       </section>
     </div>
